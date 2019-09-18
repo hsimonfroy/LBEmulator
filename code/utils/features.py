@@ -82,6 +82,7 @@ def tophatfunction(k, R):
         wt = 1
     return wt
 
+
 def gaussfunction(k, R):
     '''Takes in k, R scalar to return gauss window for the tuple'''
     kr = k*R
@@ -93,6 +94,7 @@ def fingaussfunction(k, kny, R):
     '''Takes in k, R and kny to do Gaussian smoothing corresponding to finite grid with kny'''
     kf = np.sin(k*np.pi/kny/2.)*kny*2/np.pi
     return np.exp(-(kf**2 * R**2) /2.)
+
 
 def guassdiff(pm, R1, R2):
     pass
