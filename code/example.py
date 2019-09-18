@@ -104,6 +104,7 @@ if __name__=="__main__":
 
 
     bs, nc = 1000, 512
+    bs, nc = 400, 256
     #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/%d-%d-9100-fixed/'%(bs, nc)
     dpath = '/global/cscratch1/sd/chmodi/cosmo4d/data/z00/L%04d_N%04d_S0100_40step/'%(bs, nc)
     aa = 1.0000
@@ -143,6 +144,8 @@ if __name__=="__main__":
             k, spectra = getspectra(eul_fields)
 
             header = '1, b1, b2, bg, bk'
+            if zadisp: np.savetxt('./output/spectraza-%04d-%04d-R%d.txt'%(bs, nc, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
+            else: np.savetxt('./output/spectra-%04d-%04d-R%d.txt'%(bs, nc, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
             header = header.split(',')
             bvec = [1, 1, 1, 1, 1]
             model = getmodel(spectra, bvec)
