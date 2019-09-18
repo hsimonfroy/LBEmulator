@@ -103,7 +103,7 @@ def fitbias(ph, spectra, binit=[1, 0, 0, 0], k=None, kmax=None):
 if __name__=="__main__":
 
 
-    bs, nc = 400, 256
+    bs, nc = 1000, 512
     #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/%d-%d-9100-fixed/'%(bs, nc)
     dpath = '/global/cscratch1/sd/chmodi/cosmo4d/data/z00/L%04d_N%04d_S0100_40step/'%(bs, nc)
     aa = 1.0000
@@ -111,93 +111,96 @@ if __name__=="__main__":
     Rsm = 0
     zadisp = True
     
-    pm = ParticleMesh(BoxSize=bs, Nmesh=[nc, nc, nc])
-    rank = pm.comm.rank
-    grid = pm.mesh_coordinates()*bs/nc
-    
-    lin = BigFileMesh(dpath + '/mesh', 's').paint()
-    dyn = BigFileCatalog(dpath + '/dynamic/1')
-    hcat = BigFileCatalog(dpath + '/FOF/')
-    #
-    grid = dyn['InitPosition'].compute()
-    fpos = dyn['Position'].compute()
-    print(rank, (grid-fpos).std(axis=0))
+    for Rsm in [0, 2]:
+        for zadisp in [True, False]:
+            pm = ParticleMesh(BoxSize=bs, Nmesh=[nc, nc, nc])
+            rank = pm.comm.rank
+            #grid = pm.mesh_coordinates()*bs/nc
 
-    dgrow = cosmo.scale_independent_growth_factor(zz)
-    if zadisp : fpos = za.doza(lin.r2c(), grid, z=zz, dgrow=dgrow)
-    dlay = pm.decompose(fpos)
-    
-    hpos = hcat['CMPosition']
-    hlay = pm.decompose(hpos)
-    hmesh = pm.paint(hpos, layout=hlay)
-    hmesh /= hmesh.cmean()
-    
-    ph = FFTPower(hmesh, mode='1d').power
-    k, ph = ph['k'],  ph['power']
+            lin = BigFileMesh(dpath + '/mesh', 's').paint()
+            dyn = BigFileCatalog(dpath + '/dynamic/1')
+            hcat = BigFileCatalog(dpath + '/FOF/')
+            #
+            grid = dyn['InitPosition'].compute()
+            fpos = dyn['Position'].compute()
+            print(rank, (grid-fpos).std(axis=0))
 
-    lag_fields = getlagfields(pm, lin, R=Rsm)
-    eul_fields = geteulfields(pm, lag_fields, fpos, grid)
-    k, spectra = getspectra(eul_fields)
+            dgrow = cosmo.scale_independent_growth_factor(zz)
+            if zadisp : fpos = za.doza(lin.r2c(), grid, z=zz, dgrow=dgrow)
+            dlay = pm.decompose(fpos)
 
-    header = '1, b1, b2, bg, bk'
-    header = header.split(',')
-    bvec = [1, 1, 1, 1, 1]
-    model = getmodel(spectra, bvec)
-    iv = len(header)
+            hpos = hcat['CMPosition']
+            print('Mass : ', rank, hcat['Mass'][-1].compute())
+            hlay = pm.decompose(hpos)
+            hmesh = pm.paint(hpos, layout=hlay)
+            hmesh /= hmesh.cmean()
 
-    fig, ax = plt.subplots(1, iv, figsize=(12, 4))
-    counter = 0
-    
-    for i in range(iv):
-        for j in range(i, iv):
-            ax[i].plot(k, spectra[counter], '-C%d'%j, label=header[j])
-            ax[i].plot(k, -spectra[counter], '--C%d'%j)
-            counter += 1
-        ax[i].set_title(header[i])
+            ph = FFTPower(hmesh, mode='1d').power
+            k, ph = ph['k'],  ph['power']
 
-    for axis in ax:
-        axis.plot(k, ph, 'k', label='Halo')
-        axis.plot(k, model, 'k--', label='Model')
-        axis.set_xlabel('k (h/Mpc)', fontsize=12)
-        ax[0].set_ylabel('$P_{ab}$', fontsize=12)
-        axis.legend(fontsize=12)
-        axis.loglog()
-    plt.tight_layout()
-    if zadisp: plt.savefig('figs/exampleza-R%d.png'%Rsm)
-    else: plt.savefig('figs/example-R%d.png'%Rsm) # 
-    
+            lag_fields = getlagfields(pm, lin, R=Rsm)
+            eul_fields = geteulfields(pm, lag_fields, fpos, grid)
+            k, spectra = getspectra(eul_fields)
+
+            header = '1, b1, b2, bg, bk'
+            header = header.split(',')
+            bvec = [1, 1, 1, 1, 1]
+            model = getmodel(spectra, bvec)
+            iv = len(header)
+
+            fig, ax = plt.subplots(1, iv, figsize=(15, 4), sharex=True)
+            counter = 0
+
+            for i in range(iv):
+                for j in range(i, iv):
+                    ax[i].plot(k, spectra[counter], '-C%d'%j, label=header[j])
+                    ax[i].plot(k, -spectra[counter], '--C%d'%j)
+                    counter += 1
+                ax[i].set_title(header[i])
+
+            for axis in ax:
+                axis.plot(k, ph, 'k', label='Halo')
+                axis.plot(k, model, 'k--', label='Model')
+                axis.set_xlabel('k (h/Mpc)', fontsize=12)
+                ax[0].set_ylabel('$P_{ab}$', fontsize=12)
+                axis.legend(fontsize=12)
+                axis.loglog()
+            plt.tight_layout()
+            if zadisp: plt.savefig('figs/exampleza-%04d-%04d-R%d.png'%(bs, nc, Rsm))
+            else: plt.savefig('figs/example-%04d-%04d-R%d.png'%(bs, nc, Rsm))
 
 
-    if rank == 0:
-        rep = fitbias(ph, spectra, k=k)
-        bvec = [1] + list(rep.x)
-        
-        model = getmodel(spectra, bvec)
-        iv = len(header)
 
-        fig, axar = plt.subplots(1, 2, figsize=(8, 4))
-        axis = axar[0]
-        axis.plot(k, ph, 'k', label='Halo')
-        axis.plot(k, model, 'r--', label='Model')
-        axis.set_xlabel('k (h/Mpc)', fontsize=12)
-        axis.set_ylabel('$P$', fontsize=12)
-        axis.legend(fontsize=12)
-        axis.loglog()
-        #axis.set_title(rep.x)
-        axis.grid()
+            if rank == 0:
+                rep = fitbias(ph, spectra, k=k)
+                bvec = [1] + list(rep.x)
 
-        axis = axar[1]
-        axis.plot(k, model/ph, 'k', label='Halo')
-        axis.set_xlabel('k (h/Mpc)', fontsize=12)
-        axis.set_ylabel('$P$', fontsize=12)
-        axis.legend(fontsize=12)
-        axis.semilogx()
-        plt.suptitle(rep.x)
-        axis.grid(which='both', lw=0.5)
+                model = getmodel(spectra, bvec)
+                iv = len(header)
 
-        plt.tight_layout()
-        if zadisp: plt.savefig('figs/examplefitza-R%d.png'%Rsm)
-        else: plt.savefig('figs/examplefit-R%d.png'%Rsm)
+                fig, axar = plt.subplots(1, 2, figsize=(8, 4))
+                axis = axar[0]
+                axis.plot(k, ph, 'k', label='Halo')
+                axis.plot(k, model, 'r--', label='Model')
+                axis.set_xlabel('k (h/Mpc)', fontsize=12)
+                axis.set_ylabel('$P$', fontsize=12)
+                axis.legend(fontsize=12)
+                axis.loglog()
+                #axis.set_title(rep.x)
+                axis.grid()
 
-        
-    
+                axis = axar[1]
+                axis.plot(k, model/ph, 'k', label='Halo')
+                axis.set_xlabel('k (h/Mpc)', fontsize=12)
+                axis.set_ylabel('$P$', fontsize=12)
+                axis.legend(fontsize=12)
+                axis.semilogx()
+                plt.suptitle(rep.x)
+                axis.grid(which='both', lw=0.5)
+
+                plt.tight_layout()
+                if zadisp: plt.savefig('figs/examplefitza-%04d-%04d-R%d.png'%(bs, nc, Rsm))
+                else: plt.savefig('figs/examplefit-%04d-%04d-R%d.png'%(bs, nc, Rsm))
+
+
+
