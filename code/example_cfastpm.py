@@ -12,12 +12,16 @@ from nbodykit.lab import BigFileMesh, BigFileCatalog, FFTPower
 from nbodykit.cosmology import Planck15, EHPower, Cosmology
 
 import tools
-import sys
+import os, sys
 sys.path.append('./utils/')
 import za
 import features as ft
 cosmodef = {'omegam':0.309167, 'h':0.677, 'omegab':0.048}
 cosmo = Cosmology.from_dict(cosmodef)
+
+import time
+
+#########################################
 
 
 
@@ -31,39 +35,57 @@ def fitbias(ph, spectra, binit=[1, 0, 0, 0], k=None, kmax=None):
     rep = minimize(tomin, binit, method='Nelder-Mead', options={'maxfev':10000})
     return rep
 
-
-
 if __name__=="__main__":
 
 
-    bs, nc = 400, 256
-    dpath = '/global/cscratch1/sd/chmodi/cosmo4d/data/z00/L%04d_N%04d_S0100_40step/'%(bs, nc)
-    aa = 1.0000
+    seed = 9200
+    subf = '/cm_lowres-5stepB1-fixed/'
+    try: os.makedirs('./output/%s'%subf)
+    except : pass
+    try: os.makedirs('./figs/%s'%subf)
+    except : pass
+    
+    bs, nc = 1024, 512
+    #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/%d-%d-9100-fixed/'%(bs, nc)
+    dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100/'%(bs, nc)
+    dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100-fixed/'%(bs, nc)
+
+    aa = 0.3333
     zz = 1/aa-1
     Rsm = 0
-    zadisp = True
-    
+
     pm = ParticleMesh(BoxSize=bs, Nmesh=[nc, nc, nc])
     rank = pm.comm.rank
     #grid = pm.mesh_coordinates()*bs/nc
+    lin = BigFileMesh(dpath+ '/linear', 'LinearDensityK').paint()
+    dyn = BigFileCatalog(dpath +  '/fastpm_%0.4f/1'%aa)
+    hcat = BigFileCatalog(dpath+  '/fastpm_%0.4f/LL-0.200/'%aa)
+    #
+    fpos = dyn['Position'].compute()
+    idd = dyn['ID'].compute()
+    attrs = dyn.attrs
     
-    lin = BigFileMesh(dpath + '/mesh', 's').paint()
-    dyn = BigFileCatalog(dpath + '/dynamic/1')
-    hcat = BigFileCatalog(dpath + '/FOF/')
+
+    grid = tools.getqfromid(idd, attrs, nc)
 
     for Rsm in [0, 2]:
         for zadisp in [True, False]:
+
             #
-            grid = dyn['InitPosition'].compute()
             fpos = dyn['Position'].compute()
-            print(rank, (grid-fpos).std(axis=0))
 
             dgrow = cosmo.scale_independent_growth_factor(zz)
             if zadisp : fpos = za.doza(lin.r2c(), grid, z=zz, dgrow=dgrow)
             dlay = pm.decompose(fpos)
+            disp = grid - fpos
+            mask = abs(disp) > bs/2.
+            disp[mask] = (bs - abs(disp[mask]))*-np.sign(disp[mask])
+            print(rank, ' Max disp: ', disp.max())
+            print(rank, ' Std disp: ', disp.std(axis=0))
 
-            hpos = hcat['CMPosition']
-            print('Mass : ', rank, hcat['Mass'][-1].compute())
+            #
+            hpos = hcat['Position']
+            print('Mass : ', rank, hcat['Length'][-1].compute()*hcat.attrs['M0']*1e10)
             hlay = pm.decompose(hpos)
             hmesh = pm.paint(hpos, layout=hlay)
             hmesh /= hmesh.cmean()
@@ -76,8 +98,8 @@ if __name__=="__main__":
             k, spectra = tools.getspectra(eul_fields)
 
             header = '1, b1, b2, bg, bk'
-            if zadisp: np.savetxt('./output/spectraza-%04d-%04d-R%d.txt'%(bs, nc, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
-            else: np.savetxt('./output/spectra-%04d-%04d-R%d.txt'%(bs, nc, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
+            if zadisp: np.savetxt('./output/%s/spectraza-%04d-%04d-%04d-R%d.txt'%(subf, aa*10000, bs, nc, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
+            else: np.savetxt('./output/%s/spectra-%04d-%04d-%04d-R%d.txt'%(subf, aa*10000, bs, nc, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
             header = header.split(',')
             bvec = [1, 1, 1, 1, 1]
             model = tools.getmodel(spectra, bvec)
@@ -101,8 +123,8 @@ if __name__=="__main__":
                 axis.legend(fontsize=12)
                 axis.loglog()
             plt.tight_layout()
-            if zadisp: plt.savefig('figs/exampleza-%04d-%04d-R%d.png'%(bs, nc, Rsm))
-            else: plt.savefig('figs/example-%04d-%04d-R%d.png'%(bs, nc, Rsm))
+            if zadisp: plt.savefig('figs/%s/exampleza-%04d-%04d-%04d-R%d.png'%(subf, aa*10000, bs, nc, Rsm))
+            else: plt.savefig('figs/%s/example-%04d-%04d-%04d-R%d.png'%(subf, aa*10000, bs, nc, Rsm))
 
 
 
@@ -134,8 +156,8 @@ if __name__=="__main__":
                 axis.grid(which='both', lw=0.5)
 
                 plt.tight_layout()
-                if zadisp: plt.savefig('figs/examplefitza-%04d-%04d-R%d.png'%(bs, nc, Rsm))
-                else: plt.savefig('figs/examplefit-%04d-%04d-R%d.png'%(bs, nc, Rsm))
+                if zadisp: plt.savefig('figs/%s/examplefitza-%04d-%04d-%04d-R%d.png'%(subf, aa*10000, bs, nc, Rsm))
+                else: plt.savefig('figs/%s/examplefit-%04d-%04d-%04d-R%d.png'%(subf, aa*10000, bs, nc, Rsm))
 
 
 
