@@ -51,14 +51,16 @@ if __name__=="__main__":
     dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/20stepT-B1/%d-%d-9100/'%(bs, nc)
     #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100-fixed/'%(bs, nc)
 
-    aa = 1.0000
+    aa = 0.5000
     zz = 1/aa-1
     Rsm = 0
 
-    pm = ParticleMesh(BoxSize=bs, Nmesh=[nc, nc, nc])
+    pm = ParticleMesh(BoxSize=bs, Nmesh=[nc, nc, nc], dtype='f8')
     rank = pm.comm.rank
     #grid = pm.mesh_coordinates()*bs/nc
     lin = BigFileMesh(dpath+ '/linear', 'LinearDensityK').paint()
+    lin -= lin.cmean()
+    
     dyn = BigFileCatalog(dpath +  '/fastpm_%0.4f/1'%aa)
     hcat = BigFileCatalog(dpath+  '/fastpm_%0.4f/LL-0.200/'%aa)
     #
@@ -97,6 +99,7 @@ if __name__=="__main__":
             lag_fields = tools.getlagfields(pm, lin, R=Rsm)
             eul_fields = tools.geteulfields(pm, lag_fields, fpos, grid)
             k, spectra = tools.getspectra(eul_fields)
+            #k, spectra = tools.getspectra(lag_fields)
 
             header = '1, b1, b2, bg, bk'
             if zadisp: np.savetxt('./output/%s/spectraza-%04d-%04d-%04d-R%d.txt'%(subf, aa*10000, bs, nc, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')

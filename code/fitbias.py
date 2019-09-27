@@ -28,8 +28,8 @@ def fitbias(ph, spectra, binit=[1, 0, 0, 0, 1], k=None, kmax=None):
         ik = np.where(k > kmax)[0][0]
     else: ik = len(ph)
     tomin = lambda b: sum( (ph - tools.getmodel(spectra, [1] + list(b[:-1])) - b[-1])[:ik]**2 ) #added shot noise
-    rep = minimize(tomin, binit, method='Nelder-Mead', options={'maxfev':10000})
-    #rep = minimize(tomin, binit,  options={'maxfev':10000})
+    #rep = minimize(tomin, binit, method='Nelder-Mead', options={'maxfev':10000})
+    rep = minimize(tomin, binit,  options={'maxfev':10000})
     return rep
 
 

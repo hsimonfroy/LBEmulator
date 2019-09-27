@@ -48,6 +48,7 @@ if __name__=="__main__":
     #grid = pm.mesh_coordinates()*bs/nc
     
     lin = BigFileMesh(dpath + '/mesh', 's').paint()
+    print(lin.cmean())
     dyn = BigFileCatalog(dpath + '/dynamic/1')
     hcat = BigFileCatalog(dpath + '/FOF/')
 
