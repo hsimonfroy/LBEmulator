@@ -79,7 +79,7 @@ def getmodel(spec, bvec):
     counter = 0
     for i in range(iv):
         for j in range(i, iv):
-            model += bvec[i]*bvec[j]*spec[counter]
+            model = model + bvec[i]*bvec[j]*spec[counter]
             counter += 1
 
     return model

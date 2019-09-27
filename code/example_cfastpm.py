@@ -38,8 +38,8 @@ def fitbias(ph, spectra, binit=[1, 0, 0, 0], k=None, kmax=None):
 if __name__=="__main__":
 
 
-    seed = 9200
-    subf = '/cm_lowres-5stepB1-fixed/'
+    #seed = 9200
+    subf = '/cm_lowres-20stepB1/'
     try: os.makedirs('./output/%s'%subf)
     except : pass
     try: os.makedirs('./figs/%s'%subf)
@@ -47,10 +47,11 @@ if __name__=="__main__":
     
     bs, nc = 1024, 512
     #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/%d-%d-9100-fixed/'%(bs, nc)
-    dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100/'%(bs, nc)
-    dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100-fixed/'%(bs, nc)
+    #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100/'%(bs, nc)
+    dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/20stepT-B1/%d-%d-9100/'%(bs, nc)
+    #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100-fixed/'%(bs, nc)
 
-    aa = 0.3333
+    aa = 1.0000
     zz = 1/aa-1
     Rsm = 0
 
