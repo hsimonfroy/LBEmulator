@@ -96,7 +96,7 @@ if __name__=="__main__":
             ph = FFTPower(hmesh, mode='1d').power
             k, ph = ph['k'],  ph['power']
 
-            lag_fields = tools.getlagfields(pm, lin, R=Rsm)
+            lag_fields = tools.getlagfields(pm, lin*dgrow, R=Rsm) # use the linear field at the desired redshift
             eul_fields = tools.geteulfields(pm, lag_fields, fpos, grid)
             k, spectra = tools.getspectra(eul_fields)
             #k, spectra = tools.getspectra(lag_fields)
