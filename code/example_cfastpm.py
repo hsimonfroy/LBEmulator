@@ -51,7 +51,8 @@ if __name__=="__main__":
     dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/20stepT-B1/%d-%d-9100/'%(bs, nc)
     #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100-fixed/'%(bs, nc)
 
-    aa = 0.5000
+    #aa = 0.5000
+    aa = 1.0000
     zz = 1/aa-1
     Rsm = 0
 
