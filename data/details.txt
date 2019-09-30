@@ -1,0 +1,39 @@
+10 directories, one per realization:
+
+The CrowCanyon simulations use the 40 step FastPM scheme in
+3200 Mpc/h boxes with 6144^3 particles. The box is slightly repliated to
+provide half sky coverage (NGP, z > 0) and a redshift coverage from 0 to
+2.2.
+
+
+boxsize = 3200.
+time_step = linspace(0.1, 1, 40)
+output_redshifts= {2.5, 2.0, 1.5, 1.25, 1.0, 0.55, 0.0}  -- redshifts of output
+
+lc_amin = 1 / (2.2 + 1)
+lc_amax = 0.995
+
+-- Cosmology --
+omega_m = 0.309167
+h       = math.sqrt((0.022470 + 0.119230) / omega_m)
+
+-- Start with a power spectrum file
+-- Initial power spectrum: k P(k) in Mpc/h units
+-- Must be compatible with the Cosmology parameter
+read_powerspectrum="/global/project/projectdirs/m3127/cosmology/PLANCK18BAO/pk_Planck2018BAO_matterpower_z000.dat"
+
+The job scripts and log files are at:
+
+/global/project/projectdirs/m3127/crowcanyon/desi-6144-9200-40eae2464.job
+
+(and other seeds). It is probably the most authoritive source.
+Also be aware that parameters are printed at the head of each log file,
+and a string version is also stored in the attrs of the catalog.
+(only lua can parse it)
+
+The power spectrum file is referenced in the referenced lua file, and so
+are the cosmology parameter and the random seeds (9200 .... 9209).
+/global/project/projectdirs/m3127/crowcanyon/lightcone-desi.lua
+
+There is a textual description at 
+/global/project/projectdirs/desi/users/yfeng1/crowcanyon/v0
