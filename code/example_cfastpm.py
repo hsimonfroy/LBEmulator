@@ -70,9 +70,16 @@ if __name__=="__main__":
     
 
     grid = tools.getqfromid(idd, attrs, nc)
-
-    for Rsm in [0, 2]:
-        for zadisp in [True, False]:
+    
+    #Rsms = [0,2]
+    #zadisps = [True, False]
+    
+    Rsms = [0,]
+    zadisps = [False,]
+    
+    
+    for Rsm in Rsms:
+        for zadisp in zadisps:
 
             #
             fpos = dyn['Position'].compute()
