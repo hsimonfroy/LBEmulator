@@ -39,7 +39,7 @@ if __name__=="__main__":
 
 
     #seed = 9200
-    subf = '/cm_lowres-20stepB1_smooth/'
+    subf = '/cm_lowres-20stepB1/'
     try: os.makedirs('./output/%s'%subf)
     except : pass
     try: os.makedirs('./figs/%s'%subf)
@@ -51,6 +51,7 @@ if __name__=="__main__":
     dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/20stepT-B1/%d-%d-9100/'%(bs, nc)
     #dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/5stepT-B1/%d-%d-9100-fixed/'%(bs, nc)
 
+    #aa = 0.5000
     aa = 1.0000
     zz = 1/aa-1
     Rsm = 0
@@ -70,9 +71,16 @@ if __name__=="__main__":
     
 
     grid = tools.getqfromid(idd, attrs, nc)
-
-    for Rsm in [0]:
-        for zadisp in [False, True]:
+    
+    #Rsms = [0,2]
+    #zadisps = [True, False]
+    
+    Rsms = [0,]
+    zadisps = [False,]
+    
+    
+    for Rsm in Rsms:
+        for zadisp in zadisps:
 
             #
             fpos = dyn['Position'].compute()

@@ -33,6 +33,7 @@ def getlagfields(pm, basemesh, R=0, smoothd0=True, kernel='gauss'):
     s2 = ft.shear(pm, base)
     s2 -= s2.cmean()
     lap = ft.laplace(pm, base)
+    lap -= lap.cmean()
 
     #do we smooth the field with b1?
     if smoothd0: d0 = base.copy()
