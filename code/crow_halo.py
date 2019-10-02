@@ -55,81 +55,27 @@ if __name__=="__main__":
         pm = ParticleMesh(BoxSize=bs, Nmesh=[nc, nc, nc], dtype='f8')
         rank = pm.comm.rank
 
-        print(rank, 'lin field read')
-
+        
         hcat = BigFileCatalog(dpath+  '/fastpm_%0.4f/LL-0.200/'%aa)
 
         print(rank, 'files read')
 
 
-        hpos = hcat['Position']
-        print('Mass : ', rank, hcat['Length'][-1].compute()*hcat.attrs['M0']*1e10)
-        hlay = pm.decompose(hpos)
-        hmesh = pm.paint(hpos, layout=hlay)
-        #hmesh /= hmesh.cmean()
+        #print('Mass : ', rank, hcat['Length'][-1].compute()*hcat.attrs['M0']*1e10)
 
-        ph = FFTPower(hmesh, mode='1d').power
-        k, ph = ph['k'],  ph['power']
+        numd = [1e-2, 5e-3, 1e-3, 5e-4, 1e-4, 5e-5]
+        num = [int(bs**3 * i) for i in numd]
+        
+        for i in range(len(num)):
 
-        np.savetxt('ph-crow-%d.txt'%seed, np.vstack([k, ph]).T.real, fmt='%0.4e')
-##        
-##        x = FieldMesh(hmesh)
-##        x.save(lpath + 'meshes', dataset='hmesh', mode='real')
-##
-##        flay = pm.decompose(fpos)
-##        fmesh = pm.paint(fpos, layout=flay)
-##        fmesh /= fmesh.cmean()
-##
-##        x = FieldMesh(fmesh)
-##        x.save(lpath + 'meshes', dataset='final', mode='real')
-##
-##        #ph = FFTPower(hmesh, mode='1d').power
-##        #k, ph = ph['k'],  ph['power']
-##
-##        if pm.comm.rank == 0:
-##            print('dynamic model created')
-##
-##
-##        for Rsm in [0]:
-##            for zadisp in [False, True]:
-##
-##                #
-##                fpos = dyn['Position'].compute()
-##
-##                dgrow = cosmo.scale_independent_growth_factor(zz)
-##                if zadisp : fpos = za.doza(lin.r2c(), grid, z=zz, dgrow=dgrow)
-##                dlay = pm.decompose(fpos)
-##                disp = grid - fpos
-##                mask = abs(disp) > bs/2.
-##                disp[mask] = (bs - abs(disp[mask]))*-np.sign(disp[mask])
-##                print(rank, ' Max disp: ', disp.max())
-##                print(rank, ' Std disp: ', disp.std(axis=0))
-##
-##
-##                ph = FFTPower(hmesh, mode='1d').power
-##                k, ph = ph['k'],  ph['power']
-##
-##                lag_fields = tools.getlagfields(pm, lin*dgrow, R=Rsm) # use the linear field at the desired redshift
-##                eul_fields = tools.geteulfields(pm, lag_fields, fpos, grid)
-##                k, spectra = tools.getspectra(eul_fields)
-##                #k, spectra = tools.getspectra(lag_fields)
-##
-##                header = '1, b1, b2, bg, bk'
-##                if zadisp: np.savetxt(ofolder + '/spectraza-z%03d-R%d.txt'%(zz*100, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
-##                else: np.savetxt(ofolder + '/spectra-z%03d-R%d.txt'%(zz*100, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
-##                header = header.split(',')
-##
+            if rank == 0: print(numd[i])
+            cat = hcat.gslice(start=0, stop=num[i])
 
+            hlay = pm.decompose(cat['Position'])
+            hmesh = pm.paint(cat['Position'], layout=hlay)
+            hmesh /= hmesh.cmean()
+            
+            ph = FFTPower(hmesh, mode='1d').power
+            k, ph = ph['k'],  ph['power']
 
-    ##            #
-    ##            mmass = [5e13, 1e13, 5e12, 1e12, 5e11, 1e11, 5e10, 1e10]
-    ##            hcat['Mass'] = hcat['Length']*hcat.attrs['M0']*1e10
-    ##            
-    ##            cat = fofcat.gslice(0, 1)['Mass'].compute()*1e10
-    ##
-    ##            hpos = hcat['Position']
-    ##            print('Mass : ', rank, hcat['Length'][-1].compute()*hcat.attrs['M0']*1e10)
-    ##            hlay = pm.decompose(hpos)
-    ##            hmesh = pm.paint(hpos, layout=hlay)
-    ##            hmesh /= hmesh.cmean()
-    ##
+            np.savetxt(ofolder + '/ph-%05d.txt'%(numd[i]*1e5), np.vstack([k, ph]).T.real, header='k ph', fmt='%0.4e')

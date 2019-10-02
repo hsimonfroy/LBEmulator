@@ -50,6 +50,11 @@ def geteulfields(pm, basevec, pos, grid, doed=False):
     toret = []
     for base in basevec:
         toret.append(pm.paint(pos, mass=base.readout(grid, layout = glay, resampler='nearest'), layout=play))
+
+#    for ib, base in enumerate(basevec):
+#        print(ib, base.cmean())
+#        if abs(base.cmean()) > 1e-1:
+#            base /= base.cmean()
     return toret
 
 
@@ -57,10 +62,14 @@ def getspectra(basevec):
     '''get spectra of all combinations of fields'''
     spec = []
     iv = len(basevec)
-
+#    means = [i.cmean() for i in basevec]
+#    for i in range(iv):
+#        if abs(means[i]) < 1e-2: means[i] = 1
+#    
     for i in range(iv):
         for j in range(i, iv):
             spec.append(FFTPower(basevec[i], second=basevec[j], mode='1d').power)
+            #spec.append(FFTPower(basevec[i]/basevec[i].cmean(), second=basevec[j]/basevec[j].cmean(), mode='1d').power)
 
     k = spec[0]['k']
     for i, ip in enumerate(spec):

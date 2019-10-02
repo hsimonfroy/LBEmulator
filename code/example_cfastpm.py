@@ -39,7 +39,7 @@ if __name__=="__main__":
 
 
     #seed = 9200
-    subf = '/cm_lowres-20stepB1/'
+    subf = '/cm_lowres-20stepB1_extrapt/'
     try: os.makedirs('./output/%s'%subf)
     except : pass
     try: os.makedirs('./figs/%s'%subf)
@@ -71,12 +71,16 @@ if __name__=="__main__":
     
 
     grid = tools.getqfromid(idd, attrs, nc)
-    
+#    supp = int(grid.shape[0]*1.)
+#    grid2 = np.random.uniform(0, bs, supp*3).reshape(supp, 3)
+#    grid = np.concatenate([grid, grid2])
+#    print(grid.shape, nc**3)
+#
     #Rsms = [0,2]
     #zadisps = [True, False]
     
     Rsms = [0,]
-    zadisps = [False,]
+    zadisps = [True,]
     
     
     for Rsm in Rsms:
@@ -128,11 +132,12 @@ if __name__=="__main__":
                 ax[i].set_title(header[i])
 
             for axis in ax:
-                axis.plot(k, ph, 'k', label='Halo')
-                axis.plot(k, model, 'k--', label='Model')
+                axis.plot(k, ph, 'k')
+                axis.plot(k, model, 'k--')
                 axis.set_xlabel('k (h/Mpc)', fontsize=12)
                 ax[0].set_ylabel('$P_{ab}$', fontsize=12)
                 axis.legend(fontsize=12)
+                axis.grid(which = 'both')
                 axis.loglog()
             plt.tight_layout()
             if zadisp: plt.savefig('figs/%s/exampleza-%04d-%04d-%04d-R%d.png'%(subf, aa*10000, bs, nc, Rsm))

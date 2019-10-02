@@ -11,7 +11,8 @@ def shear(pm, base):
     s2 = pm.create(mode='real', value=0)                                                  
     kk = base.r2c().x
     k2 = sum(ki**2 for ki in kk)                                                                          
-    k2[0,0,0] =  1                                                                  
+    #k2[0,0,0] =  1                                                                  
+    k2[k2 == 0] =  1                                                                  
     for i in range(3):
         for j in range(i, 3):                                                       
             basec = base.r2c()
@@ -30,9 +31,15 @@ def laplace(pm, base):
     '''Takes in a PMesh object in real space. Returns am array of laplace field'''          
     kk = base.r2c().x
     k2 = sum(ki**2 for ki in kk)                                                                          
-    k2[0,0,0] =  1
+    k2[k2 == 0] =  1                                                                  
+    #k2[0,0,0] =  1
+    k = k2**0.5
     basec = base.r2c()
     lapc = -1*basec*k2
+
+#    kny = np.pi*pm.Nmesh[0]/pm.BoxSize[0]
+#    smooth = np.cos(np.pi/2 * k/kny) 
+#    lapc *= smooth 
     return lapc.c2r()
 
 
