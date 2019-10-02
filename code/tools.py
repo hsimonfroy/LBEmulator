@@ -49,7 +49,6 @@ def geteulfields(pm, basevec, pos, grid, doed=False):
     toret = []
     for base in basevec:
         toret.append(pm.paint(pos, mass=base.readout(grid, layout = glay, resampler='nearest'), layout=play))
-
     return toret
 
 
