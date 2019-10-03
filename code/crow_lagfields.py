@@ -1,3 +1,8 @@
+#
+# Script to compute the grid of delta_L, g and nabla-delta
+# from the initial conditions.
+# Used as input by *_weights.py.
+#
 import warnings
 warnings.filterwarnings("ignore")
 
