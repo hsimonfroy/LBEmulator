@@ -89,21 +89,23 @@ if __name__=="__main__":
             
             # First compute the halo auto-power.
             ph = FFTPower(hmesh, mode='1d').power
-            k, ph = ph['k'],  ph['power']
-
-            outfn = ofolder+"ph_{:05.2f}_{:05.2f}_z{:03d}.txt".\
-                    format(lgMmin[i],lgMmax[i],iz)
-            hdr   = "Real space halo power spectrum:  "+\
-                    "k ph, z={:f}, {:f}<lgM<{:f}".format(zz,lgMmin[i],lgMmax[i])
-            np.savetxt(outfn,np.vstack([k, ph]).T.real,header=hdr,fmt='%15.5e')
+            k, phh = ph['k'],  ph['power'].real
 
             # Now compute the halo-mass cross-power.
             ph = FFTPower(mmesh, second=hmesh, mode='1d').power
-            k, ph = ph['k'],  ph['power'].real
+            k, phm = ph['k'],  ph['power'].real
 
-            outfn = ofolder+"px_{:05.2f}_{:05.2f}_z{:03d}.txt".\
+            # And save the results.
+            outfn = ofolder+"ph_{:05.2f}_{:05.2f}_z{:03d}.txt".\
                     format(lgMmin[i],lgMmax[i],iz)
-            hdr   = "Real space h-m cross-spectrum:  "+\
-                    "k ph, z={:f}, {:f}<lgM<{:f}".format(zz,lgMmin[i],lgMmax[i])
-            np.savetxt(outfn,np.vstack([k, ph]).T.real,header=hdr,fmt='%15.5e')
+            fout  = open(outfn,"w")
+            fout.write("# Real space h-h auto- and h-m cross-spectra.\n")
+            fout.write("# z={:.3f}, {:.3f}<lgM<{:.3f}\n".\
+                       format(zz,lgMmin[i],lgMmax[i]))
+            fout.write("# {:>13s} {:>15s} {:>15s}\n".\
+                       format("k[h/Mpc]","P_hh","P_hm"))
+            for j in range(k.size):
+                fout.write("{:15.5e} {:15.5e} {:15.5e}\n".\
+                       format(k[j],phh[j],phm[j]))
+            fout.close()
             #
