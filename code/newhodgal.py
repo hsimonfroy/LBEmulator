@@ -11,33 +11,32 @@ import hod
 import sys            # 
 from time import time
 
-#Global, fixed things
-scratch = '/global/cscratch1/sd/yfeng1/m3127/'
-project = '/project/projectdirs/m3127/H1mass/'
-myscratch = '/global/cscratch1/sd/chmodi/m3127/H1mass/'
+def atoz(a): return 1/a - 1
+def ztoa(z): return 1/(z+1)
+
+myscratch = '/global/cscratch1/sd/sfschen/lagrangian_emulator/data/hod/'
 
 cosmodef = {'omegam':0.309167, 'h':0.677, 'omegab':0.048}
 cosmo = Cosmology.from_dict(cosmodef)
 aafiles = [0.1429, 0.1538, 0.1667, 0.1818, 0.2000, 0.2222, 0.2500, 0.2857, 0.3333]
 #aafiles = aafiles[4:]
-zzfiles = [round(tools.atoz(aa), 2) for aa in aafiles]
+zzfiles = [round(atoz(aa), 2) for aa in aafiles]
 
 #Paramteres
-#Maybe set up to take in as args file?
-#bs, nc, ncsim, sim, prefix = 256, 256, 256, 'lowres/%d-9100-fixed'%256, 'lowres'
-bs, nc, ncsim, sim, prefix = 256, 256, 2560, 'highres/%d-9100-fixed-up'%2560, 'highres'
-#bs, nc, ncsim, sim, prefix = 1024, 1024, 10240, 'highres/%d-9100-fixed-up'%10240, 'highres'
-
-def atoz(a): return 1/a - 1
-def ztoa(z): return 1/(z+1)
+bs, nc = 1024, 512
+dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/20stepT-B1/%d-%d-9100/'%(bs, nc)
+sim = 'cm_lowres/20stepT-B1/%d-%d-9100/'%(bs, nc)
 
 
-def make_galcat(aa, mmin, m1f, alpha=-1, censuff=None, satsuff=None, ofolder=None, seed=3333):
+
+
+
+def make_galcat(aa, mmin, m1, alpha=0.9, censuff=None, satsuff=None, ofolder=None, seed=3333):
     '''Assign 0s to 
     '''
-    zz = tools.atoz(aa)
+    zz = atoz(aa)
     #halocat = readincatalog(aa)
-    halocat = BigFileCatalog(scratch + sim + '/fastpm_%0.4f/'%aa, dataset='LL-0.200')
+    halocat = BigFileCatalog(dpath + '/fastpm_%0.4f/'%aa, dataset='LL-0.200')
     rank = halocat.comm.rank
 
     halocat.attrs['BoxSize'] = np.broadcast_to(halocat.attrs['BoxSize'], 3)
@@ -60,11 +59,24 @@ def make_galcat(aa, mmin, m1f, alpha=-1, censuff=None, satsuff=None, ofolder=Non
     vdisp = HaloVelocityDispersion(hmass, cosmo, 1/aa-1).compute()
     ghid = halocat['GlobalIndex'].compute()
 
+    # Select halos that have galaxies
+    rands = np.random.uniform(size=len(hmass))
+    ncen = hod.ncen(mh=hmass,mcutc=mmin,sigma=0.2)
+    ws = (rands < ncen)
+    
+    hmass = hmass[ws]
+    hpos = hpos[ws]
+    hvel = hvel[ws]
+    rvir = rvir[ws]
+    vdisp = vdisp[ws]
+    ghid = ghid[ws]
+    
     print('In rank = %d, Catalog size = '%rank, hmass.size)
     #Do hod    
     start = time()
     ncen = np.ones_like(hmass)
-    nsat = hod.nsat_martin(msat = mmin, mh=hmass, m1f=m1f, alpha=alpha).astype(int)
+    #nsat = hod.nsat_martin(msat = mmin, mh=hmass, m1f=m1f, alpha=alpha).astype(int)
+    nsat = hod.nsat_zheng(mh=hmass, m0=mmin, m1=20*mmin, alpha=alpha).astype(int)
     
     #Centrals
     cpos, cvel, gchid, chid = hpos, hvel, ghid, np.arange(ncen.size)
@@ -126,7 +138,7 @@ def make_galcat(aa, mmin, m1f, alpha=-1, censuff=None, satsuff=None, ofolder=Non
 
 if __name__=="__main__":
 
-    for aa in aafiles[:]:
+    for aa in [0.5,]:
 
         ofolder = myscratch + '/%s/fastpm_%0.4f/'%(sim, aa)
 
@@ -135,15 +147,17 @@ if __name__=="__main__":
 
         #mmin = 10**(11-0.4*np.array(zz)) #This is already 1/10th of mcut
         #Update mmin with the current mcut from draft
-        mmin = 1e9*( 1.8 + 15*(3*aa)**8 ) * 0.1 #mcut * 0.1, 0.1 being mmin
+        #mmin = 1e9*( 1.8 + 15*(3*aa)**8 ) * 0.1 #mcut * 0.1, 0.1 being mmin
+        mmin = 10**12.5
+        m1fac = 20
 
 
-        alpha = -0.8
-        for m1fac in [0.03]:
-            censuff ='-m1_%02dp%dmh-alpha-0p8-subvol'%(int(m1fac*10), (m1fac*100)%10)
-            satsuff ='-m1_%02dp%dmh-alpha-0p8-subvol'%(int(m1fac*10), (m1fac*100)%10)
+        alpha = 0.9
 
-            make_galcat(aa=aa, mmin=mmin, m1f=m1fac, alpha=alpha, censuff=censuff, satsuff=satsuff, ofolder=ofolder)
+        censuff ='-Mmin-%.1f-M1f-%.1f-alpha-0p8-subvol'%(np.log10(mmin), m1fac)
+        satsuff ='-Mmin-%.1f-M1f-%.1f-alpha-0p8-subvol'%(np.log10(mmin), m1fac)
+
+        make_galcat(aa=aa, mmin=mmin, m1=m1fac*mmin, alpha=alpha, censuff=censuff, satsuff=satsuff, ofolder=ofolder)
 
     
 
