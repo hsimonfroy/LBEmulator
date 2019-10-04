@@ -49,7 +49,7 @@ if __name__=="__main__":
     #for seed in range(9200, 9210, 1):
     for aa in [0.2500,0.3333,0.4000,0.5000,0.6667,1.0000]:
         zz = 1/aa-1
-        iz = int(100*zz)
+        iz = int(100*zz + 0.01)
         Rsm = 0
 
         lpath = '/global/cscratch1/sd/chmodi/m3127/lbemulator/N%d-T40-B2/S%d/'%(nc, seed)
