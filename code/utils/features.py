@@ -10,13 +10,13 @@ def shear(pm, base):
     '''Takes in a PMesh object in real space. Returns am array of shear'''          
     s2 = pm.create(mode='real', value=0)                                                  
     kk = base.r2c().x
-    k2 = sum(ki**2 for ki in kk)                                                                          
-    #k2[0,0,0] =  1                                                                  
-    k2[k2 == 0] =  1                                                                  
+    k2 = sum(ki**2 for ki in kk) 
+    zero_mode = (k2 == 0); nonzero = (k2 > 0)                      
+    k2[zero_mode] =  1                                                                  
     for i in range(3):
         for j in range(i, 3):                                                       
             basec = base.r2c()
-            basec *= (kk[i]*kk[j] / k2 - diracdelta(i, j)/3.)              
+            basec *= (kk[i]*kk[j] / k2 - diracdelta(i, j)/3.) * nonzero         
             baser = basec.c2r()                                                                
             s2[...] += baser**2                                                        
             if i != j:                                                              
@@ -31,7 +31,7 @@ def laplace(pm, base):
     '''Takes in a PMesh object in real space. Returns am array of laplace field'''          
     kk = base.r2c().x
     k2 = sum(ki**2 for ki in kk)                                                                          
-    k2[k2 == 0] =  1                                                                  
+    #k2[k2 == 0] =  1                                                                  
     #k2[0,0,0] =  1
     k = k2**0.5
     basec = base.r2c()
