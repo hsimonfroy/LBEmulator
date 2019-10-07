@@ -44,7 +44,7 @@ def fitbias(ph, spectra, binit=[1, 0, 0, 0], k=None, kmax=None):
 if __name__=="__main__":
 
     bs, nc = 1536, 2048
-    seed   = 9200
+    seed   = 9201
 
     #for seed in range(9200, 9210, 1):
     for aa in [0.2500,0.3333,0.4000,0.5000,0.6667,1.0000]:
@@ -52,8 +52,8 @@ if __name__=="__main__":
         iz = int(100*zz + 0.01)
         Rsm = 0
 
-        lpath = '/global/cscratch1/sd/chmodi/m3127/lbemulator/N%d-T40-B2/S%d/'%(nc, seed)
-        opath = '/global/cscratch1/sd/mwhite/LagEmu/N%d-T40-B2/S%d/'%(nc, seed)
+        lpath = '/global/cscratch1/sd/mwhite/LagEmu/N%d-T40-B2/S%d/'%(nc,seed)
+        opath = '/global/cscratch1/sd/mwhite/LagEmu/N%d-T40-B2/S%d/'%(nc,seed)
         ofolder = opath + '/spectra/'
         try: os.makedirs(ofolder)
         except : pass
@@ -96,16 +96,17 @@ if __name__=="__main__":
             k, phm = ph['k'],  ph['power'].real
 
             # And save the results.
-            outfn = ofolder+"ph_{:05.2f}_{:05.2f}_z{:03d}.txt".\
-                    format(lgMmin[i],lgMmax[i],iz)
-            fout  = open(outfn,"w")
-            fout.write("# Real space h-h auto- and h-m cross-spectra.\n")
-            fout.write("# z={:.3f}, {:.3f}<lgM<{:.3f}\n".\
-                       format(zz,lgMmin[i],lgMmax[i]))
-            fout.write("# {:>13s} {:>15s} {:>15s}\n".\
-                       format("k[h/Mpc]","P_hh","P_hm"))
-            for j in range(k.size):
-                fout.write("{:15.5e} {:15.5e} {:15.5e}\n".\
-                       format(k[j],phh[j],phm[j]))
-            fout.close()
+            if rank==0:
+                outfn = ofolder+"ph_{:05.2f}_{:05.2f}_z{:03d}.txt".\
+                        format(lgMmin[i],lgMmax[i],iz)
+                fout  = open(outfn,"w")
+                fout.write("# Real space h-h auto- and h-m cross-spectra.\n")
+                fout.write("# z={:.3f}, {:.3f}<lgM<{:.3f}\n".\
+                           format(zz,lgMmin[i],lgMmax[i]))
+                fout.write("# {:>13s} {:>15s} {:>15s}\n".\
+                           format("k[h/Mpc]","P_hh","P_hm"))
+                for j in range(k.size):
+                    fout.write("{:15.5e} {:15.5e} {:15.5e}\n".\
+                           format(k[j],phh[j],phm[j]))
+                fout.close()
             #
