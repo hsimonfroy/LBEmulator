@@ -43,6 +43,8 @@ def copy_component_spectra():
                 for infn in glob.glob(db+"/spectra-z???-R0.txt"):
                     outfn = infn.rstrip(".txt")[len(db)+1:]
                     outfn+= "_{:04d}.txt".format(iseed)
+                    outfn = outfn.replace("-","_")
+                    outfn = outfn.replace("spectra","pc")
                     shutil.copy2(infn,destdir+"/"+outfn)
 
 
