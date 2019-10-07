@@ -35,6 +35,22 @@ def copy_halo_spectra():
 
 
 
+def copy_galaxy_spectra():
+    """Copies the galaxy auto- and cross-spectrum files."""
+    for idir in dirlist:
+        for iseed in slist:
+            db = idir + "S{:04d}/spectra".format(iseed)
+            if os.path.isdir(db):
+                for infn in glob.glob(db+"/pg_z???.txt"):
+                    outfn = infn.rstrip(".txt")[len(db)+1:]
+                    outfn+= "_{:04d}.txt".format(iseed)
+                    shutil.copy2(infn,destdir+"/"+outfn)
+
+
+
+
+
+
 def copy_component_spectra():
     """Copies the component spectrum files."""
     for idir in dirlist:
@@ -53,5 +69,6 @@ def copy_component_spectra():
 
 if __name__=="__main__":
     copy_halo_spectra()
+    #copy_galaxy_spectra()
     copy_component_spectra()
     #
