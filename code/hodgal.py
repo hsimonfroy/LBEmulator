@@ -16,18 +16,11 @@ from time import time
 def atoz(a): return 1/a - 1
 def ztoa(z): return 1/(z+1)
 
-myscratch = '/global/cscratch1/sd/sfschen/lagrangian_emulator/data/hod/'
-
 cosmodef = {'omegam':0.309167, 'h':0.677, 'omegab':0.048}
 cosmo = Cosmology.from_dict(cosmodef)
 aafiles = [0.1429, 0.1538, 0.1667, 0.1818, 0.2000, 0.2222, 0.2500, 0.2857, 0.3333]
-#aafiles = aafiles[4:]
 zzfiles = [round(atoz(aa), 2) for aa in aafiles]
 
-#Paramteres
-#bs, nc = 1024, 512
-#dpath = '/global/cscratch1/sd/chmodi/m3127/cm_lowres/20stepT-B1/%d-%d-9100/'%(bs, nc)
-#sim = 'cm_lowres/20stepT-B1/%d-%d-9100/'%(bs, nc)
 
 
 sc_simpath = '/global/cscratch1/sd/sfschen/cm_crowcanyon_lemu/runs/'
@@ -96,28 +89,14 @@ def make_galcat(aa, nc,seed,bs=1536,T=40,B=2, mmin=10**12.5, m1=20*10**12.5, alp
     spos, svel, shid = hod.mksat(nsat, pos=hpos, vel=hvel, 
                                  vdisp=vdisp, conc=7, rvir=rvir, vsat=0.5, seed=seed)
     gshid = ghid[shid]
-    svelh1 = svel*2/3 + cvel[shid]/3.
-
-    smmax = hmass[shid]/10.
-    smmin = np.ones_like(smmax)*mmin
-    mask = smmin > smmax/3. #Some fudge that should be discussed
-    smmin[mask] = smmax[mask]/3.
-    smass = hod.get_msat(hmass[shid], smmax, smmin, alpha)
-
-    
-    sathmass = np.zeros_like(hmass)
-    tot = np.bincount(shid, smass)
-    sathmass[np.unique(shid)] = tot
-
-    cmass = hmass - sathmass    # assign remaining mass in centrals
 
     print('In rank = %d, Time taken = '%rank, time()-start)
     print('In rank = %d, Number of centrals & satellites = '%rank, ncen.sum(), nsat.sum())
     print('In rank = %d, Satellite occupancy: Max and mean = '%rank, nsat.max(), nsat.mean())
     #
     #Save
-    cencat = ArrayCatalog({'Position':cpos, 'Velocity':cvel, 'Mass':cmass,  'GlobalID':gchid, 
-                           'Nsat':nsat, 'HaloMass':hmass}, 
+    cencat = ArrayCatalog({'Position':cpos, 'GlobalID':gchid, 
+                           'Nsat':nsat}, 
                           BoxSize=halocat.attrs['BoxSize'], Nmesh=halocat.attrs['NC'])
     minid, maxid = cencat['GlobalID'].compute().min(), cencat['GlobalID'].compute().max() 
     if minid < 0 or maxid < 0:
@@ -129,11 +108,15 @@ def make_galcat(aa, nc,seed,bs=1536,T=40,B=2, mmin=10**12.5, m1=20*10**12.5, alp
 
     if censuff is not None:
         colsave = [cols for cols in cencat.columns]
+        print("Saving centrals.")
         cencat.save(opath+'cencat'+censuff, colsave)
     
 
-    satcat = ArrayCatalog({'Position':spos, 'Velocity':svel, 'Velocity_HI':svelh1, 'Mass':smass,  
-                           'GlobalID':gshid, 'HaloMass':hmass[shid]}, 
+    #satcat = ArrayCatalog({'Position':spos, 'Velocity':svel, 'Velocity_HI':svelh1, 'Mass':smass,  
+                         #  'GlobalID':gshid, 'HaloMass':hmass[shid]}, 
+                         # BoxSize=halocat.attrs['BoxSize'], Nmesh=halocat.attrs['NC'])
+    satcat = ArrayCatalog({'Position':spos,  
+                           'GlobalID':gshid}, 
                           BoxSize=halocat.attrs['BoxSize'], Nmesh=halocat.attrs['NC'])
     minid, maxid = satcat['GlobalID'].compute().min(), satcat['GlobalID'].compute().max() 
     if minid < 0 or maxid < 0:
@@ -145,15 +128,16 @@ def make_galcat(aa, nc,seed,bs=1536,T=40,B=2, mmin=10**12.5, m1=20*10**12.5, alp
 
     if satsuff is not None:
         colsave = [cols for cols in satcat.columns]
+        print("Saving sats.")
         satcat.save(opath+'satcat'+satsuff, colsave)
 
 #
 
 if __name__=="__main__":
 
-    nc, seed = 256, 9200
+    nc, seed = 2048, 9202
     
-    for aa in [0.5,]:
+    for aa in [1.0, 0.5,]:
 
         #sat hod : N = ((M_h-\kappa*mcut)/m1)**alpha
         zz = 1/aa-1
@@ -162,10 +146,10 @@ if __name__=="__main__":
         m1fac = 20; m1 = mmin * m1fac
         alpha = 0.9
 
-        censuff ='-Mmin-%.1f-M1f-%.1f-alpha-0p8-subvol'%(np.log10(mmin), m1fac)
-        satsuff ='-Mmin-%.1f-M1f-%.1f-alpha-0p8-subvol'%(np.log10(mmin), m1fac)
+        censuff ='-aa-%.04f-Mmin-%.1f-M1f-%.1f-alpha-0p8-subvol'%(aa,np.log10(mmin), m1fac)
+        satsuff ='-aa-%.04f-Mmin-%.1f-M1f-%.1f-alpha-0p8-subvol'%(aa,np.log10(mmin), m1fac)
 
-        make_galcat(aa, nc, seed)
+        make_galcat(aa, nc, seed, censuff=censuff, satsuff=satsuff)
 
     
 
