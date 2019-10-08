@@ -42,8 +42,11 @@ def copy_galaxy_spectra():
         for iseed in slist:
             db = idir + "S{:04d}/spectra".format(iseed)
             if os.path.isdir(db):
-                for infn in glob.glob(db+"/pg_z???.txt"):
-                    outfn = infn.rstrip(".txt")[len(db)+1:]
+                for infn in glob.glob(db+"/pks-*-1536-2048-gal.txt"):
+                    outfn = infn.rstrip(".txt")[len(db)+5:]
+                    aa    = float(outfn[:outfn.find('-')]) / 1e4
+                    iz    = int( 100*(1.0/aa-1.)+0.01 )
+                    outfn = "pg_z{:03d}".format(iz)
                     outfn+= "_{:04d}.txt".format(iseed)
                     shutil.copy2(infn,destdir+"/"+outfn)
 
@@ -99,6 +102,6 @@ def copy_component_spectra():
 
 if __name__=="__main__":
     copy_halo_spectra()
-    #copy_galaxy_spectra()
+    copy_galaxy_spectra()
     copy_component_spectra()
     #
