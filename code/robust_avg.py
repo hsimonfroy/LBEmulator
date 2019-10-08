@@ -33,7 +33,7 @@ def robust_avg(dd):
     minimizes \sum_i L(x_i-mu) for mu."""
     avg = np.mean(dd,axis=0)
     med = np.median(dd,axis=0)
-    mad = np.median(np.abs(dd-med),axis=0)/0.68
+    mad = np.median(np.abs(dd-med),axis=0)/0.68 + 1e-30
     xs  = np.empty_like(dd)
     for i in range(dd.shape[0]):
         xs[i,:]  = (dd[i,:]-med) / mad
@@ -106,7 +106,7 @@ def average_galaxy_spectra(zz):
     ff.write("# Galaxy (HOD) auto- and cross-power spectra.\n")
     ff.write("# Robust average of {:d} spectra using sqrt(1+x^2).\n".\
              format(phh.shape[0]))
-    ff.write("# {:05.2f}<lgM<{:05.2f}, z={:.3f}\n".format(lgMmin,lgMmax,zz))
+    ff.write("# z={:.3f}\n".format(zz))
     ff.write("# {:>13s} {:>15s} {:>15s} {:>15s} {:>15s}\n".\
              format("k[h/Mpc]","<Phh>","Err[Phh]","<Phm>","Err[Phm]"))
     for i in range(kk.size):
@@ -120,6 +120,43 @@ def average_galaxy_spectra(zz):
 
 
 
+
+def average_component_spectra(zz):
+    """Does the robust average of the component spectra."""
+    # First read the data, throwing away the first row (which is k=0).
+    iz = int(100*zz+0.01)
+    fn = db+"pc_z{:03d}_R0_????.txt".format(iz)
+    kk = read_column(fn,0)[0,1:]
+    # Now we want to read in each of the remaining columns and average them.
+    dd = np.loadtxt(db+"pc_z{:03d}_R0_{:04d}.txt".format(iz,seeds[1]))
+    pk = np.zeros( (kk.size,dd.shape[1]) )
+    pk[:,0] = kk
+    # Now we compute robust averages, and here it matter more.
+    for i in range(1,pk.shape[1]):
+        dd     = read_column(fn,i)[:,1:]
+        mu,sig = robust_avg(dd)
+        pk[:,i]= mu.copy()
+    # and write the summary file.
+    fout=db+"pc_z{:03d}_R0.txt".format(iz)
+    ff  = open(fout,"w")
+    ff.write("# LPT component spectra.\n")
+    ff.write("# Robust average of {:d} spectra using sqrt(1+x^2).\n".\
+             format(dd.shape[0]))
+    ff.write("# z={:.3f}\n".format(zz))
+    for i in range(kk.size):
+        outstr = "{:15.5e}".format(kk[i])
+        for j in range(1,pk.shape[1]):
+            outstr += " {:15.5e}".format(pk[i,j])
+        ff.write(outstr+"\n")
+    ff.close()
+    #
+
+
+
+
+
+
+
 if __name__=="__main__":
     lgMmin = [12.0,12.5,13.0]
     lgMmax = [12.5,13.0,13.5]
@@ -127,6 +164,7 @@ if __name__=="__main__":
         for zz in [0.0,1.0]:
             average_halo_spectra(lgMmin[i],lgMmax[i],zz)
     #
-    #for zz in [1.0]:
-    #    average_galaxy_spectra(zz)
+    for zz in [0.0,1.0]:
+        #average_galaxy_spectra(zz)
+        average_component_spectra(zz)
     #
