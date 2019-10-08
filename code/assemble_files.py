@@ -76,10 +76,10 @@ def copy_component_spectra():
                     ww       = np.nonzero( pk[:,0]<0.08 )[0]
                     pk[ww,7] = np.interp(pk[ww,0],clpt[:,0],clpt[:, 7])
                     # Replace ( 1,bs), column 4 with column 9 in PT file.
-                    ww       = np.nonzero( pk[:,0]<0.08 )[0]
+                    ww       = np.nonzero( pk[:,0]<0.06 )[0]
                     pk[ww,4] = np.interp(pk[ww,0],clpt[:,0],clpt[:, 9]/2)
                     # Replace (b1,bs), column 4 with column 9 in PT file.
-                    ww       = np.nonzero( pk[:,0]<0.08 )[0]
+                    ww       = np.nonzero( pk[:,0]<0.07 )[0]
                     pk[ww,8] = np.interp(pk[ww,0],clpt[:,0],clpt[:,10]/2)
                     # Now write the modified data to file.
                     outfn = infn.rstrip(".txt")[len(db)+1:]
