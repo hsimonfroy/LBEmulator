@@ -76,7 +76,9 @@ def ncen(mh, mcutc, sigma):
 
 
 def nsat_zheng(mh, m0, m1, alpha):
-    return ((mh - m0)/m1) ** alpha
+    nsat = ((mh - m0)/m1) ** alpha
+    nsat[mh<m0] = 0
+    return nsat
 
 def nsat_martin(msat, mh, m1f, alpha):
     '''return number of satellites with mass greater than msat
