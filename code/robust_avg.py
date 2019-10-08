@@ -10,6 +10,8 @@ import numpy as np
 import glob
 import os
 
+from scipy.signal import savgol_filter as savgol
+
 
 db    = "/global/cscratch1/sd/mwhite/LagEmu/AllSpectra/"
 seeds = range(9200,9210)
@@ -136,6 +138,9 @@ def average_component_spectra(zz):
         dd     = read_column(fn,i)[:,1:]
         mu,sig = robust_avg(dd)
         pk[:,i]= mu.copy()
+    # Some of the spectra are still a bit noisy, so we smooth them.
+    for i in [3,4,7,8]:
+        pk[:,i]= savgol(pk[:,i],7,polyorder=3)
     # and write the summary file.
     fout=db+"pc_z{:03d}_R0.txt".format(iz)
     ff  = open(fout,"w")
