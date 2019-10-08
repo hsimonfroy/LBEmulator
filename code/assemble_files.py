@@ -67,16 +67,16 @@ def copy_component_spectra():
                     ptfn += "cleft_components_z_{:3.1f}.dat".format(zz)
                     clpt  = np.loadtxt(ptfn)
                     # Replace ( 1,b2), column 3 with column 6 in PT file.
-                    ww       = np.nonzero( pk[:,0]<0.10 )[0]
+                    ww       = np.nonzero( pk[:,0]<0.08 )[0]
                     pk[ww,3] = np.interp(pk[ww,0],clpt[:,0],clpt[:, 6])
                     # Replace (b1,b2), column 7 with column 7 in PT file.
-                    ww       = np.nonzero( pk[:,0]<0.15 )[0]
+                    ww       = np.nonzero( pk[:,0]<0.08 )[0]
                     pk[ww,7] = np.interp(pk[ww,0],clpt[:,0],clpt[:, 7])
                     # Replace ( 1,bs), column 4 with column 9 in PT file.
-                    ww       = np.nonzero( pk[:,0]<0.15 )[0]
+                    ww       = np.nonzero( pk[:,0]<0.08 )[0]
                     pk[ww,4] = np.interp(pk[ww,0],clpt[:,0],clpt[:, 9]/2)
                     # Replace (b1,bs), column 4 with column 9 in PT file.
-                    ww       = np.nonzero( pk[:,0]<0.15 )[0]
+                    ww       = np.nonzero( pk[:,0]<0.08 )[0]
                     pk[ww,8] = np.interp(pk[ww,0],clpt[:,0],clpt[:,10]/2)
                     # Now write the modified data to file.
                     outfn = infn.rstrip(".txt")[len(db)+1:]
