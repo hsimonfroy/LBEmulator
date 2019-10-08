@@ -158,6 +158,8 @@ def make_component_spectra(scale_factor,nc,seed,bs=1536,T=40,B=2,simpath=sc_simp
 
     del dyn, fpos, idd, iddg, wts
     print('got fields')
+
+    iz = int(100*zz+0.01)
             
     k, spectra = tools.getspectra(eul_fields)
-    np.savetxt(opath + '/spectra-z%03d-R%d.txt'%(zz*100, Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
+    np.savetxt(opath + '/spectra-z%03d-R%d.txt'%(iz,Rsm), np.vstack([k, spectra]).T.real, header='k / '+header, fmt='%0.4e')
