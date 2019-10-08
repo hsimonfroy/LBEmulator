@@ -150,8 +150,4 @@ if __name__=="__main__":
         satsuff ='-aa-%.04f-Mmin-%.1f-M1f-%.1f-alpha-0p8-subvol'%(aa,np.log10(mmin), m1fac)
 
         make_galcat(aa, nc, seed, censuff=censuff, satsuff=satsuff)
-
-    
-
-
-
+        make_galaxy_pk(aa,2048,seed)
