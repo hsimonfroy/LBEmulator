@@ -67,6 +67,9 @@ if __name__=="__main__":
         mlay = pm.decompose(fpos)
         mmesh = pm.paint(fpos, layout=mlay)
         mmesh /= mmesh.cmean()
+
+        ph = FFTPower(mmesh, mode='1d').power
+        k, pmm = ph['k'],  ph['power'].real
         
         hcat = BigFileCatalog(lpath+  '/fastpm_%0.4f/LL-0.200/'%aa)
         print(rank, 'files read')
@@ -100,13 +103,13 @@ if __name__=="__main__":
                 outfn = ofolder+"ph_{:05.2f}_{:05.2f}_z{:03d}.txt".\
                         format(lgMmin[i],lgMmax[i],iz)
                 fout  = open(outfn,"w")
-                fout.write("# Real space h-h auto- and h-m cross-spectra.\n")
+                fout.write("# Real space auto- and cross-spectra.\n")
                 fout.write("# z={:.3f}, {:.3f}<lgM<{:.3f}\n".\
                            format(zz,lgMmin[i],lgMmax[i]))
-                fout.write("# {:>13s} {:>15s} {:>15s}\n".\
-                           format("k[h/Mpc]","P_hh","P_hm"))
+                fout.write("# {:>13s} {:>15s} {:>15s} {:>15s}\n".\
+                           format("k[h/Mpc]","P_hh","P_hm","P_mm"))
                 for j in range(k.size):
-                    fout.write("{:15.5e} {:15.5e} {:15.5e}\n".\
-                           format(k[j],phh[j],phm[j]))
+                    fout.write("{:15.5e} {:15.5e} {:15.5e} {:15.5e}\n".\
+                           format(k[j],phh[j],phm[j],pmm[j]))
                 fout.close()
             #
