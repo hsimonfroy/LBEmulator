@@ -14,9 +14,9 @@ import os
 destdir = "/global/cscratch1/sd/mwhite/LagEmu/AllSpectra"
 
 # Directories to search.
-dirlist = ["/global/cscratch1/sd/mwhite/LagEmu/N2048-T40-B2/",
-           "/global/cscratch1/sd/sfschen/lagrangian_emulator"+\
-           "/data/N2048-T40-B2/"]
+dirlist = ["/global/cscratch1/sd/sfschen/lagrangian_emulator"+\
+           "/data/N2048-T40-B2/", \
+           "/global/cscratch1/sd/mwhite/LagEmu/N2048-T40-B2/"]
 
 # Seeds to look for.
 slist   = range(9200,9210)
