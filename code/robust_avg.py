@@ -166,10 +166,12 @@ if __name__=="__main__":
     lgMmin = [12.0,12.5,13.0]
     lgMmax = [12.5,13.0,13.5]
     for i in range(len(lgMmin)):
-        for zz in [0.0,1.0]:
+        for zz in [0.0,0.5,1.0,2.0]:
             average_halo_spectra(lgMmin[i],lgMmax[i],zz)
     #
-    for zz in [0.0,1.0]:
-        #average_galaxy_spectra(zz)
+    for zz in [0.0,0.5,1.0,2.0]:
         average_component_spectra(zz)
+    #
+    for zz in [0.0,1.0]:
+        average_galaxy_spectra(zz)
     #
