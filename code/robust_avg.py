@@ -170,6 +170,8 @@ if __name__=="__main__":
             average_halo_spectra(lgMmin[i],lgMmax[i],zz)
     #
     for zz in [0.0,0.5,1.0,2.0]:
-        #average_galaxy_spectra(zz)
         average_component_spectra(zz)
+    #
+    for zz in [0.0,1.0]:
+        average_galaxy_spectra(zz)
     #
