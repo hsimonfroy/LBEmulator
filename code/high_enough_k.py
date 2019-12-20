@@ -16,7 +16,7 @@ def make_plot():
     kmax= 0.6
     lmax= kmax * chi
     for Mmin,Mmax,sn in zip([12.00,13.00],[12.50,13.50],[437.1,3404.]):
-        fn = "data/ph_{:05.2f}_{:05.2f}_z{:03d}.txt".format(Mmin,Mmax,iz)
+        fn = "../data/ph_{:05.2f}_{:05.2f}_z{:03d}.txt".format(Mmin,Mmax,iz)
         dd = np.loadtxt(fn)
         d2 = dd[:,0]**3*dd[:,1]/2/np.pi**2
         ell= dd[:,0]*chi
@@ -25,7 +25,7 @@ def make_plot():
         ax[0].plot(dd[:,0],d2,'bs',mfc='None',alpha=0.5)
         ax[1].plot(ell,cl,'bs',mfc='None',alpha=0.5)
         #
-        fn = "data/pth_z_{:03.1f}_M_{:04.1f}_{:04.1f}.dat".format(zz,Mmin,Mmax)
+        fn = "../data/pth_z_{:03.1f}_M_{:04.1f}_{:04.1f}.dat".format(zz,Mmin,Mmax)
         tt = np.loadtxt(fn)
         d2 = tt[:,0]**3*tt[:,1]/2/np.pi**2
         ell= tt[:,0]*chi
@@ -53,7 +53,8 @@ def make_plot():
     ax[0].set_xlabel(r'$k\quad [h\ {\rm Mpc}^{-1}]$',fontsize=12)
     ax[0].set_ylabel(r'$\Delta^2(k)$',fontsize=12)
     #
-    ax[1].set_xlim(10,4000)
+    ax[1].text(23,3e-8,'$0.75<z<1.25$')
+    ax[1].set_xlim(20,4000)
     ax[1].set_ylim(2e-8,3e-5)
     ax[1].set_xscale('log')
     ax[1].set_yscale('log')
