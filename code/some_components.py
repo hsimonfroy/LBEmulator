@@ -27,15 +27,16 @@ def make_plot():
     ax[1].plot(dd[:,0],dd[:,9],color='C3',label=r'$(\delta,\nabla^2\delta)$')
     ax[1].plot(dd[:,0],dd[:,10],color='C4',label=r'$(\delta^2,\delta^2)$')
     #
-    ax[0].legend()
+    ax[0].legend(framealpha=0.5)
     ax[0].set_xlim(1e-2,1.0)
     ax[0].set_ylim(1e1,4e4)
     ax[0].set_xscale('log')
     ax[0].set_yscale('log')
     ax[0].set_xlabel(r'$k\quad [h\ {\rm Mpc}^{-1}]$',fontsize=12)
     ax[0].set_ylabel(r'$|P_{ij}(k)|\quad[h^{-3}{\rm Mpc}^3]$',fontsize=12)
+    ax[0].text(0.9,3e4,'$z=0$',ha='right',va='top')
     #
-    ax[1].legend()
+    ax[1].legend(framealpha=0.5)
     ax[1].set_xlim(1e-2,1.0)
     ax[1].set_ylim(1e1,4e4)
     ax[1].set_xscale('log')
