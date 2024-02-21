@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "LBEmulator"
 version = "0.0.1"
+authors = [{name="Chirag Modi"}, {name="Martin White"}, {name="Shi-Fan Stephen Chen"}]
 description = "Emulator for halo power spectrum based on lagrangian bias model and numerical simulations."
 dependencies = ["pmesh", "nbodykit"]
 readme = "README.md"
