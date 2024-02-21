@@ -10,4 +10,4 @@ readme = "README.md"
 requires-python = ">=3.7"
 
 [tool.setuptools]
-packages = ["LBEmulator"]
+packages = ["code"]
